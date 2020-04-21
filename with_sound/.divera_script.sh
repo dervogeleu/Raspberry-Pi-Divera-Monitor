@@ -3,6 +3,7 @@
 ACCESSKEY="{YOUR ACCESS KEY}"
 API_URL="https://www.divera247.com/api/last-alarm?accesskey=${ACCESSKEY}"
 IS_MONITOR_ACTIVE=true
+SOUND_PLAYING=false
 
 # includes the divera commands
 source .divera_commands.sh
@@ -22,15 +23,37 @@ while true; do
     if [ $DOW = 3 ] && [ $HOUR -ge 17 ]; then
     	DUTY_TIME=true
     fi
-    if [ $DOW = 4 ] && [ $HOUR -lt 1 ]; then
+    if [ $DOW = 6 ] && [ $HOUR -gt 7 ] && [ $HOUR -lt 21 ]; then
     	DUTY_TIME=true
     fi
     #saturday duty
-    if [ $DOW = 6 ] && [ $HOUR -ge 7 ] && [ $HOUR -le 19 ]; then
-    	DUTY_TIME=true
-    fi
+
+
+    if [ $HAS_ALARM = true ] && [ $SOUND_PLAYING = false ]; then
+
+		TITEL=$(curl -s "${API_URL}" | jq -r -j '.title')
+        TEXT=$(curl -s "${API_URL}" | jq -r -j '.text')
+        ADDRESSE=$(curl -s "${API_URL}" | jq -r -j '.address')
+        NUMMER=$(curl -s "${API_URL}" | jq -r -j '.id')
+
+        pico2wave -w source.wav --lang=de-DE "Einsatz. ${TITEL} . ${ADDRESSE} . ${TEXT%%<*}.  " #here you can define the content and the order in wich the message is played
+        sox source.wav einsatz.wav tempo 0.8
+        aplay {name of your file.wav} #name of a file that should be played before the message
+        aplay einsatz.wav
+        echo "${TITEL}"
+        echo "${TEXT%%<*}"
+
+        cp einsatz.wav einsatz_"${NUMMER}".wav
+        rm einsatz.wav
+		SOUND_PLAYING=true
+	fi	
     
-    
+	if [ $HAS_ALARM = false ] && [ $SOUND_PLAYING = true ]; then
+	
+		SOUND_PLAYING=false
+	
+	fi
+	
     #case: active mission and monitor off
     if [ $HAS_ALARM = true ] && [ $IS_MONITOR_ACTIVE = false ]; then
         echo "Mission turning display on"
