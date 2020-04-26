@@ -31,10 +31,10 @@ while true; do
 
     if [ $HAS_ALARM = true ] && [ $SOUND_PLAYING = false ]; then
 
-		TITEL=$(curl -s "${API_URL}" | jq -r -j '.title')
-        TEXT=$(curl -s "${API_URL}" | jq -r -j '.text')
-        ADDRESSE=$(curl -s "${API_URL}" | jq -r -j '.address')
-        NUMMER=$(curl -s "${API_URL}" | jq -r -j '.id')
+		TITEL=$(curl -s "${API_URL}" | jq -r -j '.data | .title')
+        TEXT=$(curl -s "${API_URL}" | jq -r -j '.data | .text')
+        ADDRESSE=$(curl -s "${API_URL}" | jq -r -j '.data | .address')
+        NUMMER=$(curl -s "${API_URL}" | jq -r -j '.data | .id')
 
         pico2wave -w source.wav --lang=de-DE "Einsatz. ${TITEL} . ${ADDRESSE} . ${TEXT%%<*}.  " #here you can define the content and the order in wich the message is played
         sox source.wav einsatz.wav tempo 0.8
