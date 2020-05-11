@@ -44,6 +44,7 @@ while true; do
         echo "${TEXT%%<*}"
 
         cp einsatz.wav einsatz_"${NUMMER}".wav
+	rm source.wav
         rm einsatz.wav
 		SOUND_PLAYING=true
 	fi	
